@@ -1,36 +1,40 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-
+const axios = require('axios');
 const app = express();
-const port = 3000; // Replace with desired port number
+const PORT = 3000;
 
-// Configure body parser for JSON data
-app.use(bodyParser.json());
+// My private token 
+const accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiZXhwIjoxNzIxMDMwNTI0LCJpYXQiOjE3MjEwMzAyMjQsImlzcyI6IkFmZm9yZG1lZCIsImp0aSI6IjgzYTNmZDlkLTRmY2UtNDU4My05ZDI5LWUwODU5MDc2MTcyZSIsInN1YiI6Im1yaWdhbmtzaGVraGFyY3I3QGdtYWlsLmNvbSJ9LCJjb21wYW55TmFtZSI6ImdvU2hvcHB5IiwiY2xpZW50SUQiOiI4M2EzZmQ5ZC00ZmNlLTQ1ODMtOWQyOS1lMDg1OTA3NjE3MmUiLCJjbGllbnRTZWNyZXQiOiJuRVFBUVdqdVppUGtGSWlmIiwib3duZXJOYW1lIjoiTXJpZ2FuayIsIm93bmVyRW1haWwiOiJtcmlnYW5rc2hla2hhcmNyN0BnbWFpbC5jb20iLCJyb2xsTm8iOiIyMzAxNDA2MDYzIn0.8qB7l0m83FFhm0NQUXnU2qFIH68oeAwVUTSf-xJlJK8";
 
-// Endpoint to handle company registration (replace with actual logic)
-app.post('/register', (req, res) => {
-  // Access company data from the request body
-  const companyName = req.body.companyName;
-  const ownerName = req.body.ownerName;
-  const rollNo = req.body.rollNo;
-  const ownerEmail = req.body.ownerEmail;
-  const accessCode = req.body.accessCode;
+app.get('/categories/:category/products', async (req, res) => {
+  const { category } = req.params;
+  const { n, minPrice, maxPrice } = req.query;
+  
+  try {
+    const response = await axios.get(`http://20.244.56.144/test/companies/AMZ/categories/${category}/products`, {
+      params: { top: n, minPrice, maxPrice },
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    res.json(response.data);
 
-  // Replace with actual registration logic (e.g., database interaction)
-  console.log(`Company registration request:`);
-  console.log(`  Company Name: ${companyName}`);
-  console.log(`  Owner Name: ${ownerName}`);
-  console.log(`  Roll Number: ${rollNo}`);
-  console.log(`  Owner Email: ${ownerEmail}`);
-  console.log(`  Access Code: ${accessCode}`);
 
-  // Simulate successful registration (replace with actual response)
-  res.status(200).json({
-    message: 'Registration successful! (placeholder response)'
-  });
+  } catch (error) {
+    console.error('Error occurred:', error.message);
+    if (error.response) {
+      console.error('Response data:', error.response.data);
+      console.error('Response status:', error.response.status);
+      console.error('Response headers:', error.response.headers);
+      res.status(error.response.status).send(error.response.data);
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+      res.status(500).send('No response received from the server.');
+    } else {
+      console.error('Error setting up request:', error.message);
+      res.status(500).send('Error setting up request.');
+    }
+  }
 });
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
